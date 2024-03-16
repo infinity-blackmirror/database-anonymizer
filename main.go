@@ -1,10 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	"github.com/urfave/cli/v2"
+	"gitnet.fr/deblan/database-anonymizer/app"
 	"gitnet.fr/deblan/database-anonymizer/config"
-	"log"
+	"gitnet.fr/deblan/database-anonymizer/logger"
 	"os"
 )
 
@@ -12,32 +16,28 @@ func main() {
 	app := &cli.App{
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "type",
-				Value: "",
-				Usage: "type of database (eg: mysql)",
-			},
-			&cli.StringFlag{
 				Name:  "dsn",
 				Value: "",
 				Usage: "DSN (eg: mysql://user:pass@host/dbname)",
 			},
 			&cli.StringFlag{
-				Name:  "config",
-				Value: "config.yaml",
+				Name:  "schema",
+				Value: "schema.yaml",
 				Usage: "Configuration file",
 			},
 		},
 		Action: func(c *cli.Context) error {
-			err, databaseConfig := config.LoadDatabaseConfig(c)
+			databaseConfig, err := config.LoadDatabaseConfig(c.String("dsn"))
+			logger.LogFatalExitIf(err)
 
-			if err != nil {
-				log.Fatalf(err.Error())
-				os.Exit(1)
-			}
+			db, err := sql.Open(databaseConfig.Type, databaseConfig.Dsn)
+			logger.LogFatalExitIf(err)
 
-			fmt.Printf("%+v\n", databaseConfig)
+			schema, err := config.LoadSchemaConfigFromFile(c.String("schema"))
+			logger.LogFatalExitIf(err)
 
-			return nil
+			app := app.App{}
+			return app.Run(db, schema)
 		},
 	}
 

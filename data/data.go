@@ -40,7 +40,7 @@ func (d *Data) IsTwigExpression() bool {
 }
 
 func (d *Data) Update(row map[string]Data) {
-	if !d.IsPrimaryKey && d.Faker != "" {
+	if !d.IsPrimaryKey && d.Faker != "" && d.Value != "" {
 		if d.IsTwigExpression() {
 			env := twig.New(nil)
 			params := map[string]stick.Value{}

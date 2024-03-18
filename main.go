@@ -31,6 +31,7 @@ func main() {
 			logger.LogFatalExitIf(err)
 
 			db, err := sql.Open(databaseConfig.Type, databaseConfig.Dsn)
+			defer db.Close()
 			logger.LogFatalExitIf(err)
 
 			schema, err := config.LoadSchemaConfigFromFile(c.String("schema"))

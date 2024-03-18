@@ -7,10 +7,12 @@ import (
 )
 
 type SchemaConfigData struct {
+	Table          string              `yaml:"table"`
 	Query          string              `yaml:"query"`
 	VirtualColumns map[string]string   `yaml:"virtual_columns"`
 	Generators     map[string][]string `yaml:"generators"`
 	Columns        map[string]string   `yaml:"columns"`
+	PrimaryKey     []string            `yaml:"primary_key"`
 }
 
 type SchemaConfigRules struct {

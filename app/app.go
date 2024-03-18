@@ -19,12 +19,14 @@ type App struct {
 func (a *App) ApplyRule(c config.SchemaConfigData, globalColumns map[string]string, generators map[string][]string) error {
 	var query string
 
+	if c.Table == "" {
+		return errors.New("Table must be defined")
+	}
+
 	if c.Query != "" {
 		query = c.Query
-	} else if c.Table != "" {
-		query = fmt.Sprintf("SELECT * FROM %s", c.Table)
 	} else {
-		return errors.New("No query and no table defined")
+		query = fmt.Sprintf("SELECT * FROM %s", c.Table)
 	}
 
 	if len(c.PrimaryKey) == 0 {

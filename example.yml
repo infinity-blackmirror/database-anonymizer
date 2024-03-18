@@ -1,0 +1,23 @@
+rules:
+  columns:
+    phone: phone_number
+  generators:
+    aaaaaaaaaaaaa: [id]
+  datas:
+    - table: user
+      query: 'select * from user where email not like "%foo%"'
+      virtual_columns:
+        domain: domain_name
+      columns:
+        confirmation_token: null
+        firstname: first_name
+        lastname: last_name
+        email: "{{ firstname ~ '.' ~ lastname ~ '@' ~ domain }}"
+    - table: company
+      columns:
+        name: name
+    - table: post
+      query: 'select * from post where company_id is not null'
+      delete: true
+    - table: training
+      delete: true

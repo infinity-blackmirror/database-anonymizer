@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	// "os"
 	"strconv"
 	"strings"
@@ -12,11 +13,13 @@ import (
 	"gitnet.fr/deblan/database-anonymizer/config"
 	"gitnet.fr/deblan/database-anonymizer/data"
 	"gitnet.fr/deblan/database-anonymizer/database"
+	"gitnet.fr/deblan/database-anonymizer/faker"
 	"gitnet.fr/deblan/database-anonymizer/logger"
 )
 
 type App struct {
-	Db *sql.DB
+	Db          *sql.DB
+	FakeManager faker.FakeManager
 }
 
 func (a *App) DoAction(c config.SchemaConfigAction, globalColumns map[string]string, generators map[string][]string) error {
@@ -123,7 +126,11 @@ func (a *App) DoAction(c config.SchemaConfigAction, globalColumns map[string]str
 				rows[key][col] = value
 			}
 
-			rows[key] = a.UpdateRow(rows[key])
+			v, err := a.UpdateRow(rows[key])
+
+			logger.LogFatalExitIf(err)
+
+			rows[key] = v
 		}
 
 		for _, row := range rows {
@@ -174,36 +181,40 @@ func (a *App) DoAction(c config.SchemaConfigAction, globalColumns map[string]str
 	return nil
 }
 
-func (a *App) UpdateRow(row map[string]data.Data) map[string]data.Data {
+func (a *App) UpdateRow(row map[string]data.Data) (map[string]data.Data, error) {
 	for key, value := range row {
+		if !a.FakeManager.IsValidFaker(value.Faker) {
+			return row, errors.New(fmt.Sprintf("\"%s\" is not a valid faker", value.Faker))
+		}
+
 		if value.IsVirtual && !value.IsTwigExpression() {
-			value.Update(row)
+			value.Update(row, a.FakeManager)
 			row[key] = value
 		}
 	}
 
 	for key, value := range row {
 		if value.IsVirtual && value.IsTwigExpression() {
-			value.Update(row)
+			value.Update(row, a.FakeManager)
 			row[key] = value
 		}
 	}
 
 	for key, value := range row {
 		if !value.IsVirtual && !value.IsTwigExpression() {
-			value.Update(row)
+			value.Update(row, a.FakeManager)
 			row[key] = value
 		}
 	}
 
 	for key, value := range row {
 		if !value.IsVirtual && value.IsTwigExpression() {
-			value.Update(row)
+			value.Update(row, a.FakeManager)
 			row[key] = value
 		}
 	}
 
-	return row
+	return row, nil
 }
 
 func (a *App) TruncateTable(table string) error {
@@ -212,8 +223,9 @@ func (a *App) TruncateTable(table string) error {
 	return err
 }
 
-func (a *App) Run(db *sql.DB, c config.SchemaConfig) error {
+func (a *App) Run(db *sql.DB, c config.SchemaConfig, fakeManager faker.FakeManager) error {
 	a.Db = db
+	a.FakeManager = fakeManager
 
 	for _, data := range c.Rules.Actions {
 		err := a.DoAction(data, c.Rules.Columns, c.Rules.Generators)

@@ -8,6 +8,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"gitnet.fr/deblan/database-anonymizer/app"
 	"gitnet.fr/deblan/database-anonymizer/config"
+	"gitnet.fr/deblan/database-anonymizer/faker"
 	"gitnet.fr/deblan/database-anonymizer/logger"
 	"os"
 )
@@ -38,7 +39,7 @@ func main() {
 			logger.LogFatalExitIf(err)
 
 			app := app.App{}
-			return app.Run(db, schema)
+			return app.Run(db, schema, faker.NewFakeManager())
 		},
 	}
 

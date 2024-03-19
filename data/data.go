@@ -2,9 +2,9 @@ package data
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/tyler-sommer/stick"
 	"github.com/tyler-sommer/stick/twig"
+	"gitnet.fr/deblan/database-anonymizer/faker"
 	"gitnet.fr/deblan/database-anonymizer/logger"
 	"strconv"
 	"strings"
@@ -40,26 +40,34 @@ func (d *Data) IsTwigExpression() bool {
 	return strings.Contains(d.Faker, "{{") || strings.Contains(d.Faker, "}}")
 }
 
-func (d *Data) Update(row map[string]Data) {
-	if !d.IsPrimaryKey && d.Faker != "" && d.Value != "" {
-		if d.IsTwigExpression() {
-			env := twig.New(nil)
-			params := map[string]stick.Value{}
-
-			for key, value := range row {
-				params[key] = value.Value
-			}
-
-			var buf bytes.Buffer
-			err := env.Execute(d.Faker, &buf, params)
-
-			logger.LogFatalExitIf(err)
-
-			d.Value = buf.String()
-			d.IsUpdated = true
-		} else {
-			d.Value = fmt.Sprintf("%s__UPDATE", d.Value)
-			d.IsUpdated = true
-		}
+func (d *Data) Update(row map[string]Data, manager faker.FakeManager) {
+	if d.IsPrimaryKey {
+		return
 	}
+
+	if d.Faker == "" || d.Faker == "_" {
+		return
+	}
+
+	if d.IsTwigExpression() {
+		env := twig.New(nil)
+		params := map[string]stick.Value{}
+
+		for key, value := range row {
+			params[key] = value.Value
+		}
+
+		var buf bytes.Buffer
+		err := env.Execute(d.Faker, &buf, params)
+
+		logger.LogFatalExitIf(err)
+
+		d.Value = buf.String()
+		d.IsUpdated = true
+
+		return
+	}
+
+	d.Value = manager.Fakers[d.Faker]()
+	d.IsUpdated = true
 }

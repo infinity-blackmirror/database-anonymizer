@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	// "os"
+	"strconv"
 	"strings"
 
 	nq "github.com/Knetic/go-namedParameterQuery"
@@ -91,18 +92,27 @@ func (a *App) ApplyRule(c config.SchemaConfigData, globalColumns map[string]stri
 
 	var scan any
 
+	x := 1
+	t := len(rows)
+
 	for _, row := range rows {
+		fmt.Printf("%+v/%+v\n", x, t)
+		x = x + 1
+
 		updates := []string{}
 		pkeys := []string{}
+		pCounter := 1
 
 		for col, value := range row {
 			if value.IsUpdated {
-				updates = append(updates, fmt.Sprintf("%s=:%s", col, col))
+				updates = append(updates, fmt.Sprintf("%s=:p%s", col, strconv.Itoa(pCounter)))
+				pCounter = pCounter + 1
 			}
 		}
 
 		for _, col := range c.PrimaryKey {
-			pkeys = append(pkeys, fmt.Sprintf("%s=:%s", col, col))
+			pkeys = append(pkeys, fmt.Sprintf("%s=:p%s", col, strconv.Itoa(pCounter)))
+			pCounter = pCounter + 1
 		}
 
 		if len(updates) > 0 {
@@ -114,20 +124,23 @@ func (a *App) ApplyRule(c config.SchemaConfigData, globalColumns map[string]stri
 			)
 
 			stmt := nq.NewNamedParameterQuery(sql)
+			pCounter = 1
 
-			for col, value := range row {
+			for _, value := range row {
 				if value.IsUpdated {
-					stmt.SetValue(col, value.Value)
+					stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(pCounter)), value.Value)
+					pCounter = pCounter + 1
 				}
 			}
 
 			for _, col := range c.PrimaryKey {
-				stmt.SetValue(col, row[col].Value)
+				stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(pCounter)), row[col].Value)
+				pCounter = pCounter + 1
 			}
 
-			r := a.Db.QueryRow(stmt.GetParsedQuery(), (stmt.GetParsedParameters())...).Scan(&scan)
+			a.Db.QueryRow(stmt.GetParsedQuery(), (stmt.GetParsedParameters())...).Scan(&scan)
 
-			fmt.Printf("%+v\n", r)
+			// fmt.Printf("%+v\n", r)
 		}
 	}
 

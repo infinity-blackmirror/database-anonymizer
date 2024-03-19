@@ -183,11 +183,11 @@ func (a *App) DoAction(c config.SchemaConfigAction, globalColumns map[string]str
 
 func (a *App) UpdateRow(row map[string]data.Data) (map[string]data.Data, error) {
 	for key, value := range row {
-		if !a.FakeManager.IsValidFaker(value.Faker) {
-			return row, errors.New(fmt.Sprintf("\"%s\" is not a valid faker", value.Faker))
-		}
-
 		if value.IsVirtual && !value.IsTwigExpression() {
+			if !a.FakeManager.IsValidFaker(value.Faker) {
+				return row, errors.New(fmt.Sprintf("\"%s\" is not a valid faker", value.Faker))
+			}
+
 			value.Update(row, a.FakeManager)
 			row[key] = value
 		}
@@ -202,6 +202,10 @@ func (a *App) UpdateRow(row map[string]data.Data) (map[string]data.Data, error) 
 
 	for key, value := range row {
 		if !value.IsVirtual && !value.IsTwigExpression() {
+			if !a.FakeManager.IsValidFaker(value.Faker) {
+				return row, errors.New(fmt.Sprintf("\"%s\" is not a valid faker", value.Faker))
+			}
+
 			value.Update(row, a.FakeManager)
 			row[key] = value
 		}

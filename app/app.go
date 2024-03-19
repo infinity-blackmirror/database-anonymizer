@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
+	// "os"
+	"strings"
 
+	nq "github.com/Knetic/go-namedParameterQuery"
 	"gitnet.fr/deblan/database-anonymizer/config"
 	"gitnet.fr/deblan/database-anonymizer/data"
 	"gitnet.fr/deblan/database-anonymizer/database"
@@ -32,8 +34,6 @@ func (a *App) ApplyRule(c config.SchemaConfigData, globalColumns map[string]stri
 	if len(c.PrimaryKey) == 0 {
 		c.PrimaryKey = []string{"id"}
 	}
-
-	fmt.Printf("%+v\n", c.PrimaryKey)
 
 	rows := database.GetRows(a.Db, query)
 
@@ -86,14 +86,50 @@ func (a *App) ApplyRule(c config.SchemaConfigData, globalColumns map[string]stri
 			rows[key][col] = value
 		}
 
-		fmt.Printf("%+v\n", rows[key])
-
 		rows[key] = a.UpdateRow(rows[key])
-		fmt.Printf("%+v\n", rows[key])
-		os.Exit(0)
 	}
 
-	// fmt.Printf("%+v\n", rows)
+	var scan any
+
+	for _, row := range rows {
+		updates := []string{}
+		pkeys := []string{}
+
+		for col, value := range row {
+			if value.IsUpdated {
+				updates = append(updates, fmt.Sprintf("%s=:%s", col, col))
+			}
+		}
+
+		for _, col := range c.PrimaryKey {
+			pkeys = append(pkeys, fmt.Sprintf("%s=:%s", col, col))
+		}
+
+		if len(updates) > 0 {
+			sql := fmt.Sprintf(
+				"UPDATE %s SET %s WHERE %s",
+				c.Table,
+				strings.Join(updates, ", "),
+				strings.Join(pkeys, " AND "),
+			)
+
+			stmt := nq.NewNamedParameterQuery(sql)
+
+			for col, value := range row {
+				if value.IsUpdated {
+					stmt.SetValue(col, value.Value)
+				}
+			}
+
+			for _, col := range c.PrimaryKey {
+				stmt.SetValue(col, row[col].Value)
+			}
+
+			r := a.Db.QueryRow(stmt.GetParsedQuery(), (stmt.GetParsedParameters())...).Scan(&scan)
+
+			fmt.Printf("%+v\n", r)
+		}
+	}
 
 	return nil
 }

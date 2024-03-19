@@ -6,19 +6,20 @@ import (
 	"os"
 )
 
-type SchemaConfigData struct {
+type SchemaConfigAction struct {
 	Table          string              `yaml:"table"`
 	Query          string              `yaml:"query"`
 	VirtualColumns map[string]string   `yaml:"virtual_columns"`
 	Generators     map[string][]string `yaml:"generators"`
 	Columns        map[string]string   `yaml:"columns"`
 	PrimaryKey     []string            `yaml:"primary_key"`
+	Truncate       bool                `yaml:"truncate"`
 }
 
 type SchemaConfigRules struct {
-	Columns    map[string]string   `yaml:"columns"`
-	Generators map[string][]string `yaml:"generators"`
-	Datas      []SchemaConfigData  `yaml:"datas"`
+	Columns    map[string]string    `yaml:"columns"`
+	Generators map[string][]string  `yaml:"generators"`
+	Actions    []SchemaConfigAction `yaml:"actions"`
 }
 
 type SchemaConfig struct {

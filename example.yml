@@ -1,21 +1,20 @@
 rules:
   columns:
-    phone: phone_number
-  generators:
-    aaaaaaaaaaaaa: [id]
-  datas:
+    phone: phone_e164number
+  # generators:
+    # aaaaaaaaaaaaa: [id]
+  actions:
     - table: user
-      query: 'select * from user where email not like "%foo%"'
+      query: 'select * from `user` where email not like "%habilis%"'
       virtual_columns:
-        domain: domain_name
+        domain: internet_domain
       columns:
-        confirmation_token: null
-        firstname: first_name
-        lastname: last_name
-        email: "{{ firstname ~ '.' ~ lastname ~ '@' ~ domain }}"
+        firstname: person_firstname
+        lastname: person_lastname
+        email: "{{ (firstname ~ '.' ~ lastname ~ '@' ~ domain)|lower }}"
     - table: company
       columns:
-        name: name
+        name: company_name
     - table: post
       query: 'select * from post where company_id is not null'
       delete: true

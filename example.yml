@@ -5,7 +5,7 @@ rules:
     # aaaaaaaaaaaaa: [id]
   actions:
     - table: user
-      query: 'select * from `user` where email not like "%habilis%"'
+      query: 'select * from `user` where username != "admin"'
       virtual_columns:
         domain: internet_domain
       columns:

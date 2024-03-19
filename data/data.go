@@ -15,6 +15,7 @@ type Data struct {
 	Faker        string
 	IsVirtual    bool
 	IsPrimaryKey bool
+	IsUpdated    bool
 }
 
 func (d *Data) FromByte(v []byte) *Data {
@@ -55,8 +56,10 @@ func (d *Data) Update(row map[string]Data) {
 			logger.LogFatalExitIf(err)
 
 			d.Value = buf.String()
+			d.IsUpdated = true
 		} else {
 			d.Value = fmt.Sprintf("%s__UPDATE", d.Value)
+			d.IsUpdated = true
 		}
 	}
 }

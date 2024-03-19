@@ -159,9 +159,7 @@ func (f *FakeManager) IsValidFaker(name string) bool {
 		return true
 	}
 
-	if _, exists := f.Fakers[name]; exists {
-		return true
-	}
+	_, exists := f.Fakers[name]
 
-	return false
+	return exists
 }

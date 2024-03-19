@@ -136,16 +136,19 @@ func (a *App) DoAction(c config.SchemaConfigAction, globalColumns map[string]str
 		for _, row := range rows {
 			updates := []string{}
 			pkeys := []string{}
+			values := make(map[int]string)
 			pCounter := 1
 
 			for col, value := range row {
-				if value.IsUpdated {
+				if value.IsUpdated && !value.IsVirtual {
+					values[pCounter] = value.Value
 					updates = append(updates, fmt.Sprintf("%s=:p%s", col, strconv.Itoa(pCounter)))
 					pCounter = pCounter + 1
 				}
 			}
 
 			for _, col := range c.PrimaryKey {
+				values[pCounter] = row[col].Value
 				pkeys = append(pkeys, fmt.Sprintf("%s=:p%s", col, strconv.Itoa(pCounter)))
 				pCounter = pCounter + 1
 			}
@@ -161,16 +164,8 @@ func (a *App) DoAction(c config.SchemaConfigAction, globalColumns map[string]str
 				stmt := nq.NewNamedParameterQuery(sql)
 				pCounter = 1
 
-				for _, value := range row {
-					if value.IsUpdated {
-						stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(pCounter)), value.Value)
-						pCounter = pCounter + 1
-					}
-				}
-
-				for _, col := range c.PrimaryKey {
-					stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(pCounter)), row[col].Value)
-					pCounter = pCounter + 1
+				for i, value := range values {
+					stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(i)), value)
 				}
 
 				a.Db.QueryRow(stmt.GetParsedQuery(), (stmt.GetParsedParameters())...).Scan(&scan)

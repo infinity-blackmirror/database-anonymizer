@@ -49,14 +49,21 @@ func TestAppRun(t *testing.T) {
 	db, _ := sql.Open(databaseConfig.Type, databaseConfig.Dsn)
 	schema, _ := config.LoadSchemaConfigFromFile("../tests/schema.yml")
 
-	app := App{}
-	app.Run(db, schema, faker.NewFakeManager(), databaseConfig)
+	dsns := []string{
+		"mysql://tcp(service-mysql)/test",
+		// "postgres://postgres@tcp(service-postgres)/test",
+	}
 
-	var count int
-	row := db.QueryRow("SELECT COUNT(*) FROM `table_truncate1`")
-	row.Scan(&count)
+	for dns := range dsns {
+		app := App{}
+		app.Run(db, schema, faker.NewFakeManager(), databaseConfig)
 
-	if count != 0 {
-		t.Fatalf("TestAppRuny: table_truncate1 check failed")
+		var count int
+		row := db.QueryRow("SELECT COUNT(*) FROM table_truncate1")
+		row.Scan(&count)
+
+		if count != 0 {
+			t.Fatalf("TestAppRuny: table_truncate1 check failed")
+		}
 	}
 }

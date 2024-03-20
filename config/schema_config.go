@@ -37,3 +37,9 @@ func LoadSchemaConfigFromFile(file string) (SchemaConfig, error) {
 
 	return value, nil
 }
+
+func (c *SchemaConfigAction) InitPrimaryKey() {
+	if len(c.PrimaryKey) == 0 {
+		c.PrimaryKey = []string{"id"}
+	}
+}

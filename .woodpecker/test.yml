@@ -23,7 +23,7 @@ steps:
       - /bin/timeout -t 30 -v -c 'while true; do nc -z -v db 3306 2>&1 | grep succeeded && exit 0; sleep 0.5; done'
       - /bin/timeout -t 30 -v -c 'while true; do nc -z -v db 5432 2>&1 | grep succeeded && exit 0; sleep 0.5; done'
 
-  "Fill MySQL"
+  "Fill MySQL":
     image: *mysql_image
     commands:
       - mysql test < tests/mysql_data.sql

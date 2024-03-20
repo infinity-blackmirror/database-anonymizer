@@ -48,7 +48,7 @@ func TestAppRun(t *testing.T) {
 	schema, _ := config.LoadSchemaConfigFromFile("../tests/schema.yml")
 
 	dsns := []string{
-		"mysql://root@tcp(service-mysql)/test",
+		"mysql://root:root@tcp(service-mysql)/test",
 		// "postgres://postgres@tcp(service-postgres)/test",
 	}
 

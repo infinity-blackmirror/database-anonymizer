@@ -11,6 +11,8 @@ CREATE TABLE `table_truncate1` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+INSERT INTO `table_truncate1` (`id`) VALUES (1), (2), (3);
+
 
 DROP TABLE IF EXISTS `table_truncate2`;
 CREATE TABLE `table_truncate2` (

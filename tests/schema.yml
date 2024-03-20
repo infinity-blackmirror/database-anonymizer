@@ -1,8 +1,8 @@
 rules:
   actions:
     - table: table_truncate1
-      truncate: false
+      truncate: true
 
     - table: table_truncate2
       query: 'select * from table_truncate2 where delete_me=1'
-      truncate: false
+      truncate: true

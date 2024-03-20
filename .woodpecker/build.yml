@@ -10,7 +10,7 @@ depends_on:
   - test
 
 variables:
-  - &golang_image 'docker.io/golang:1.22.0'
+  - &golang_image 'golang:1.22.0'
 
 steps:
   "Add vendor":

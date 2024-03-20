@@ -1,0 +1,21 @@
+when:
+  - event: [pull_request, tag]
+  - event: push
+    branch:
+      - ${CI_REPO_DEFAULT_BRANCH}
+      - release/*
+      - renovate/*
+
+variables:
+  - &golang_image 'docker.io/golang:1.22.0'
+
+steps:
+  "Add vendor":
+    image: *golang_image
+    commands:
+      - go mod vendor
+
+  "Run tests":
+    image: *golang_image
+    commands:
+      - go test -v ./...

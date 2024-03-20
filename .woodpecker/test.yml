@@ -8,7 +8,7 @@ when:
 
 variables:
   - &golang_image 'golang:1.22.0'
-  - &mysql_image 'mysql:8.2.0'
+  - &mysql_image 'mariadb:10.3'
   - &postgres_image 'postgres:16'
 
 steps:
@@ -36,7 +36,6 @@ steps:
 services:
   service-postgres:
     image: *postgres_image
-    ports: ['5432']
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=test
@@ -44,7 +43,6 @@ services:
 
   service-mysql:
     image: *mysql_image
-    ports: ['3306']
     environment:
       - MYSQL_DATABASE=test
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes

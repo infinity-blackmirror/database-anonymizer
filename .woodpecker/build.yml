@@ -6,6 +6,9 @@ when:
       - release/*
       - renovate/*
 
+depends_on:
+  - test
+
 variables:
   - &golang_image 'docker.io/golang:1.22.0'
 

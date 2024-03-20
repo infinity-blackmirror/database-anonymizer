@@ -1,0 +1,4 @@
+rules:
+  actions:
+    - table: table_truncate1
+      truncate: false

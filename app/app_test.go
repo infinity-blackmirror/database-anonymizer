@@ -45,8 +45,6 @@ func TestAppDoAction(t *testing.T) {
 }
 
 func TestAppRun(t *testing.T) {
-	databaseConfig, _ := config.LoadDatabaseConfig("mysql://tcp(service-mysql)/test")
-	db, _ := sql.Open(databaseConfig.Type, databaseConfig.Dsn)
 	schema, _ := config.LoadSchemaConfigFromFile("../tests/schema.yml")
 
 	dsns := []string{
@@ -54,7 +52,9 @@ func TestAppRun(t *testing.T) {
 		// "postgres://postgres@tcp(service-postgres)/test",
 	}
 
-	for dns := range dsns {
+	for _, dsn := range dsns {
+		databaseConfig, _ := config.LoadDatabaseConfig(dsn)
+		db, _ := sql.Open(databaseConfig.Type, databaseConfig.Dsn)
 		app := App{}
 		app.Run(db, schema, faker.NewFakeManager(), databaseConfig)
 

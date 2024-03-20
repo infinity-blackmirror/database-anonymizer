@@ -65,5 +65,12 @@ func TestAppRun(t *testing.T) {
 		if count != 0 {
 			t.Fatalf("TestAppRuny: table_truncate1 check failed")
 		}
+
+		row = db.QueryRow("SELECT COUNT(*) FROM table_truncate2")
+		row.Scan(&count)
+
+		if count != 1 {
+			t.Fatalf("TestAppRuny: table_truncate2 check failed")
+		}
 	}
 }

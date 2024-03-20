@@ -39,7 +39,7 @@ func main() {
 			logger.LogFatalExitIf(err)
 
 			app := app.App{}
-			return app.Run(db, schema, faker.NewFakeManager())
+			return app.Run(db, schema, faker.NewFakeManager(), databaseConfig)
 		},
 	}
 

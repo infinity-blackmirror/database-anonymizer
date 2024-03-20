@@ -2,9 +2,18 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"gitnet.fr/deblan/database-anonymizer/data"
 	"gitnet.fr/deblan/database-anonymizer/logger"
 )
+
+func EscapeTable(dbType, table string) string {
+	if dbType == "mysql" {
+		return fmt.Sprintf("`%s`", table)
+	}
+
+	return fmt.Sprintf("\"%s\"", table)
+}
 
 func GetRows(db *sql.DB, query string) map[int]map[string]data.Data {
 	rows, err := db.Query(query)

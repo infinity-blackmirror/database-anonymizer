@@ -60,8 +60,13 @@ func (a *App) TruncateTable(c config.SchemaConfigAction) error {
 		pCounter := 1
 
 		for _, col := range c.PrimaryKey {
-			pkeys = append(pkeys, fmt.Sprintf("%s=:p%s", col, strconv.Itoa(pCounter)))
-			pCounter = pCounter + 1
+			if row[col].IsInteger {
+				value, _ := strconv.Atoi(row[col].Value)
+				pkeys = append(pkeys, fmt.Sprintf("%s=%d", col, value))
+			} else {
+				pkeys = append(pkeys, fmt.Sprintf("%s=:p%s", col, strconv.Itoa(pCounter)))
+				pCounter = pCounter + 1
+			}
 		}
 
 		sql := fmt.Sprintf(
@@ -74,8 +79,10 @@ func (a *App) TruncateTable(c config.SchemaConfigAction) error {
 		pCounter = 1
 
 		for _, col := range c.PrimaryKey {
-			stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(pCounter)), row[col].Value)
-			pCounter = pCounter + 1
+			if !row[col].IsInteger {
+				stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(pCounter)), row[col].Value)
+				pCounter = pCounter + 1
+			}
 		}
 
 		a.Db.QueryRow(stmt.GetParsedQuery(), (stmt.GetParsedParameters())...).Scan(&scan)
@@ -148,19 +155,23 @@ func (a *App) UpdateRows(c config.SchemaConfigAction, globalColumns map[string]s
 	for _, row := range rows {
 		updates := []string{}
 		pkeys := []string{}
-		values := make(map[int]string)
+		values := make(map[int][]string)
 		pCounter := 1
 
 		for col, value := range row {
 			if value.IsUpdated && !value.IsVirtual {
-				values[pCounter] = value.Value
+				if value.IsInteger {
+					values[pCounter] = []string{value.Value, "int"}
+				} else {
+					values[pCounter] = []string{value.Value, "string"}
+				}
 				updates = append(updates, fmt.Sprintf("%s=:p%s", col, strconv.Itoa(pCounter)))
 				pCounter = pCounter + 1
 			}
 		}
 
 		for _, col := range c.PrimaryKey {
-			values[pCounter] = row[col].Value
+			values[pCounter] = []string{row[col].Value, "string"}
 			pkeys = append(pkeys, fmt.Sprintf("%s=:p%s", col, strconv.Itoa(pCounter)))
 			pCounter = pCounter + 1
 		}
@@ -177,7 +188,12 @@ func (a *App) UpdateRows(c config.SchemaConfigAction, globalColumns map[string]s
 			pCounter = 1
 
 			for i, value := range values {
-				stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(i)), value)
+				if value[1] == "string" {
+					stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(i)), value[0])
+				} else {
+					newValue, _ := strconv.Atoi(value[0])
+					stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(i)), newValue)
+				}
 			}
 
 			a.Db.QueryRow(stmt.GetParsedQuery(), (stmt.GetParsedParameters())...).Scan(&scan)

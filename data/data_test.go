@@ -15,12 +15,20 @@ func TestDataFroms(t *testing.T) {
 		t.Fatalf("TestDataFroms: FromInt64 check failed")
 	}
 
+	if !d.IsInteger {
+		t.Fatalf("TestDataFroms: FromInt64 + IsInteger check failed")
+	}
+
 	v := []byte{'A', 'B', 'C'}
 
 	d.FromByte(v)
 
 	if d.Value != "ABC" {
 		t.Fatalf("TestDataFroms: FromByte check failed")
+	}
+
+	if d.IsInteger {
+		t.Fatalf("TestDataFroms FromByte + IsInteger check failed")
 	}
 }
 

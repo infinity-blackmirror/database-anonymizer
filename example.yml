@@ -1,11 +1,10 @@
 rules:
   columns:
     phone: phone_e164number
-  # generators:
-    # aaaaaaaaaaaaa: [id]
+  generators:
+    person_name: [display_name]
   actions:
     - table: user
-      query: 'select * from `user` where username != "admin"'
       virtual_columns:
         domain: internet_domain
       columns:

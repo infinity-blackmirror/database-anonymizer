@@ -28,6 +28,11 @@ steps:
     commands:
       - mysql -hservice-mysql -uroot -proot test < tests/mysql_data.sql
 
+  "Fill PostgresSQL":
+    image: *mysql_image
+    commands:
+      - psql -U postgres -d test < tests/postgres_data.sql
+
   "Run tests":
     image: *golang_image
     commands:

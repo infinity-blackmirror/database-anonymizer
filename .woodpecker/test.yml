@@ -26,7 +26,7 @@ steps:
   "Fill MySQL":
     image: *mysql_image
     commands:
-      - mysql -hservice-mysql -uroot test < tests/mysql_data.sql
+      - mysql -hservice-mysql -uroot -proot test < tests/mysql_data.sql
 
   "Run tests":
     image: *golang_image

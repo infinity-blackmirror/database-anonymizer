@@ -16,22 +16,26 @@ type Data struct {
 	IsVirtual    bool
 	IsPrimaryKey bool
 	IsUpdated    bool
+	IsInteger    bool
 }
 
 func (d *Data) FromByte(v []byte) *Data {
 	d.Value = string(v)
+	d.IsInteger = false
 
 	return d
 }
 
 func (d *Data) FromInt64(v int64) *Data {
 	d.Value = strconv.FormatInt(v, 10)
+	d.IsInteger = true
 
 	return d
 }
 
 func (d *Data) FromString(v string) *Data {
 	d.Value = v
+	d.IsInteger = false
 
 	return d
 }

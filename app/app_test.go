@@ -2,7 +2,9 @@ package app
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	"gitnet.fr/deblan/database-anonymizer/config"
 	"gitnet.fr/deblan/database-anonymizer/faker"
 	"testing"
@@ -47,30 +49,30 @@ func TestAppDoAction(t *testing.T) {
 func TestAppRun(t *testing.T) {
 	schema, _ := config.LoadSchemaConfigFromFile("../tests/schema.yml")
 
-	dsns := []string{
-		"mysql://root:root@tcp(service-mysql)/test",
-		// "postgres://postgres@tcp(service-postgres)/test",
-	}
+	dsns := make(map[string]string)
+	dsns["mysql"] = "mysql://root:root@tcp(service-mysql)/test"
+	dsns["postgres"] = "postgres://postgres:postgres@service-postgres:5432/test?sslmode=disable"
 
-	for _, dsn := range dsns {
+	var count int
+
+	for dbtype, dsn := range dsns {
 		databaseConfig, _ := config.LoadDatabaseConfig(dsn)
 		db, _ := sql.Open(databaseConfig.Type, databaseConfig.Dsn)
 		app := App{}
 		app.Run(db, schema, faker.NewFakeManager(), databaseConfig)
 
-		var count int
 		row := db.QueryRow("SELECT COUNT(*) FROM table_truncate1")
 		row.Scan(&count)
 
 		if count != 0 {
-			t.Fatalf("TestAppRuny: table_truncate1 check failed")
+			t.Fatalf(fmt.Sprintf("TestAppRuny: table_truncate1 check failed (%s)", dbtype))
 		}
 
 		row = db.QueryRow("SELECT COUNT(*) FROM table_truncate2")
 		row.Scan(&count)
 
 		if count != 1 {
-			t.Fatalf("TestAppRuny: table_truncate2 check failed")
+			t.Fatalf(fmt.Sprintf("TestAppRuny: table_truncate2 check failed (%s)", dbtype))
 		}
 	}
 }

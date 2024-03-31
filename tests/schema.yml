@@ -2,7 +2,6 @@ rules:
   actions:
     - table: table_truncate1
       truncate: true
-
     - table: table_truncate2
-      query: 'select * from table_truncate2 where delete_me=1'
+      query: 'select * from table_truncate2 where delete_me=true'
       truncate: true

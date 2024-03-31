@@ -45,4 +45,4 @@ services:
     image: *mysql_image
     environment:
       - MYSQL_DATABASE=test
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MARIADB_ROOT_PASSWORD=root

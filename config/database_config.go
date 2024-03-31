@@ -30,7 +30,12 @@ func LoadDatabaseConfig(dsn string) (DatabaseConfig, error) {
 
 	dbType := elements[0]
 
-	config.Dsn = strings.Replace(dsn, fmt.Sprintf("%s://", dbType), "", 1)
+	if dbType == "postgres" {
+		config.Dsn = dsn
+	} else {
+		config.Dsn = strings.Replace(dsn, fmt.Sprintf("%s://", dbType), "", 1)
+	}
+
 	config.Type = elements[0]
 
 	return config, nil

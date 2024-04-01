@@ -4,7 +4,7 @@
 
 It caters to various use cases such as **providing developers with an anonymized copy of a database** or **fulfilling the need to anonymize or delete data in compliance with GDPR (General Data Protection Regulation) requirements**, based on retention periods defined in the treatment register.
 
-The project includes a vast array of random data generators. It also enables data generation via Twig-written templates. You can specify precise rules for each table or global rules applied to all tables in your configuration.
+The project includes a vast array of fakers. It also enables data generation via Twig-written templates. You can specify precise rules for each table or global rules applied to all tables in your configuration.
 
 ## Usage
 

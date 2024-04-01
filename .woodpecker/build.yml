@@ -22,3 +22,13 @@ steps:
     image: *golang_image
     commands:
       - go build
+
+  "Publish":
+    image: plugins/gitea-release
+    settings:
+      api_key:
+        from_secret: gitnet_api_key
+      base_url: https://gitnet.fr
+      files: ./database-anonymizer
+    when:
+      event: [tag]

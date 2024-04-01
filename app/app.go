@@ -7,6 +7,8 @@ import (
 
 	"strings"
 
+	"github.com/schollz/progressbar/v3"
+
 	"gitnet.fr/deblan/database-anonymizer/config"
 	"gitnet.fr/deblan/database-anonymizer/data"
 	"gitnet.fr/deblan/database-anonymizer/database"
@@ -42,8 +44,12 @@ func (a *App) Run(
 }
 
 func (a *App) TruncateTable(c config.SchemaConfigAction) error {
+	bar := progressbar.Default(1, fmt.Sprintf("Truncating %s...", c.Table))
+
 	if c.Query == "" {
 		_, err := a.Db.Exec(fmt.Sprintf("TRUNCATE %s", database.EscapeTable(a.DbConfig.Type, c.Table)))
+
+		bar.Add(1)
 
 		return err
 	}
@@ -51,6 +57,8 @@ func (a *App) TruncateTable(c config.SchemaConfigAction) error {
 	query := a.CreateSelectQuery(c)
 	rows := database.GetRows(a.Db, query, c.Table, a.DbConfig.Type)
 	var scan any
+
+	bar.ChangeMax(len(rows))
 
 	for _, row := range rows {
 		pkeys := []string{}
@@ -80,6 +88,8 @@ func (a *App) TruncateTable(c config.SchemaConfigAction) error {
 		}
 
 		a.Db.QueryRow(sql, args...).Scan(&scan)
+
+		bar.Add(1)
 	}
 
 	return nil
@@ -89,6 +99,9 @@ func (a *App) UpdateRows(c config.SchemaConfigAction, globalColumns map[string]s
 	query := a.CreateSelectQuery(c)
 	rows := database.GetRows(a.Db, query, c.Table, a.DbConfig.Type)
 	var scan any
+
+	bar := progressbar.Default(int64(len(rows)))
+	bar.Describe(fmt.Sprintf("Updating %s...", c.Table))
 
 	for key, row := range rows {
 		if len(c.VirtualColumns) > 0 {
@@ -194,6 +207,8 @@ func (a *App) UpdateRows(c config.SchemaConfigAction, globalColumns map[string]s
 				logger.LogFatalExitIf(err)
 			}
 		}
+
+		bar.Add(1)
 	}
 
 	return nil

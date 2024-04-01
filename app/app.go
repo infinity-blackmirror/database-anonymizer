@@ -5,11 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	// "os"
-	"strconv"
 	"strings"
 
-	nq "github.com/Knetic/go-namedParameterQuery"
 	"gitnet.fr/deblan/database-anonymizer/config"
 	"gitnet.fr/deblan/database-anonymizer/data"
 	"gitnet.fr/deblan/database-anonymizer/database"
@@ -52,20 +49,20 @@ func (a *App) TruncateTable(c config.SchemaConfigAction) error {
 	}
 
 	query := a.CreateSelectQuery(c)
-	rows := database.GetRows(a.Db, query)
+	rows := database.GetRows(a.Db, query, c.Table, a.DbConfig.Type)
 	var scan any
 
 	for _, row := range rows {
 		pkeys := []string{}
-		pCounter := 1
+		values := make(map[int]string)
 
 		for _, col := range c.PrimaryKey {
-			if row[col].IsInteger {
-				value, _ := strconv.Atoi(row[col].Value)
-				pkeys = append(pkeys, fmt.Sprintf("%s=%d", col, value))
+			if !row[col].IsString {
+				value := row[col]
+				pkeys = append(pkeys, fmt.Sprintf("%s=%s", col, value.FinalValue()))
 			} else {
-				pkeys = append(pkeys, fmt.Sprintf("%s=:p%s", col, strconv.Itoa(pCounter)))
-				pCounter = pCounter + 1
+				pkeys = append(pkeys, database.GetNamedParameter(a.DbConfig.Type, col, len(values)+1))
+				values[len(values)+1] = row[col].Value
 			}
 		}
 
@@ -75,17 +72,14 @@ func (a *App) TruncateTable(c config.SchemaConfigAction) error {
 			strings.Join(pkeys, " AND "),
 		)
 
-		stmt := nq.NewNamedParameterQuery(sql)
-		pCounter = 1
-
-		for _, col := range c.PrimaryKey {
-			if !row[col].IsInteger {
-				stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(pCounter)), row[col].Value)
-				pCounter = pCounter + 1
+		var args []any
+		if len(values) > 0 {
+			for i := 1; i <= len(values); i++ {
+				args = append(args, values[i])
 			}
 		}
 
-		a.Db.QueryRow(stmt.GetParsedQuery(), (stmt.GetParsedParameters())...).Scan(&scan)
+		a.Db.QueryRow(sql, args...).Scan(&scan)
 	}
 
 	return nil
@@ -93,7 +87,7 @@ func (a *App) TruncateTable(c config.SchemaConfigAction) error {
 
 func (a *App) UpdateRows(c config.SchemaConfigAction, globalColumns map[string]string, generators map[string][]string) error {
 	query := a.CreateSelectQuery(c)
-	rows := database.GetRows(a.Db, query)
+	rows := database.GetRows(a.Db, query, c.Table, a.DbConfig.Type)
 	var scan any
 
 	for key, row := range rows {
@@ -155,25 +149,28 @@ func (a *App) UpdateRows(c config.SchemaConfigAction, globalColumns map[string]s
 	for _, row := range rows {
 		updates := []string{}
 		pkeys := []string{}
-		values := make(map[int][]string)
-		pCounter := 1
+		values := make(map[int]string)
 
 		for col, value := range row {
 			if value.IsUpdated && !value.IsVirtual {
-				if value.IsInteger {
-					values[pCounter] = []string{value.Value, "int"}
+				if value.IsString {
+					updates = append(updates, database.GetNamedParameter(a.DbConfig.Type, col, len(values)+1))
+					values[len(values)+1] = value.FinalValue()
 				} else {
-					values[pCounter] = []string{value.Value, "string"}
+					updates = append(updates, fmt.Sprintf("%s=%s", col, value.FinalValue()))
 				}
-				updates = append(updates, fmt.Sprintf("%s=:p%s", col, strconv.Itoa(pCounter)))
-				pCounter = pCounter + 1
 			}
 		}
 
 		for _, col := range c.PrimaryKey {
-			values[pCounter] = []string{row[col].Value, "string"}
-			pkeys = append(pkeys, fmt.Sprintf("%s=:p%s", col, strconv.Itoa(pCounter)))
-			pCounter = pCounter + 1
+			value := row[col]
+
+			if !value.IsString {
+				pkeys = append(pkeys, fmt.Sprintf("%s=%s", col, value.FinalValue()))
+			} else {
+				pkeys = append(pkeys, database.GetNamedParameter(a.DbConfig.Type, col, len(values)+1))
+				values[len(values)+1] = value.FinalValue()
+			}
 		}
 
 		if len(updates) > 0 {
@@ -184,19 +181,18 @@ func (a *App) UpdateRows(c config.SchemaConfigAction, globalColumns map[string]s
 				strings.Join(pkeys, " AND "),
 			)
 
-			stmt := nq.NewNamedParameterQuery(sql)
-			pCounter = 1
-
-			for i, value := range values {
-				if value[1] == "string" {
-					stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(i)), value[0])
-				} else {
-					newValue, _ := strconv.Atoi(value[0])
-					stmt.SetValue(fmt.Sprintf("p%s", strconv.Itoa(i)), newValue)
+			var args []any
+			if len(values) > 0 {
+				for i := 1; i <= len(values); i++ {
+					args = append(args, values[i])
 				}
 			}
 
-			a.Db.QueryRow(stmt.GetParsedQuery(), (stmt.GetParsedParameters())...).Scan(&scan)
+			err := a.Db.QueryRow(sql, args...).Scan(&scan)
+
+			if err.Error() != "" && err.Error() != "sql: no rows in result set" {
+				logger.LogFatalExitIf(err)
+			}
 		}
 	}
 

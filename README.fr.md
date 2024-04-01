@@ -40,12 +40,13 @@ rules:
 
 ### Exécution
 
-**Database Anonimize** a besoin de deux paramètres :
+Pour afficher l'aide, utiliser `-h` :
 
-- `--dsn <Le DSN de connexion à la base de données>`
-- `--schema <Le chemin vers le fichier de configuration>`
+```
+database-anonymizer -h
+```
 
-Exemples :
+Voici des exemples pour MySQL et PostgreSQL :
 
 ```
 database-anonymizer --dsn "mysql://username:password@tcp(db_host)/db_name" --schema ./schema.yaml

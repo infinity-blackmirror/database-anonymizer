@@ -1,4 +1,4 @@
-# Database Anonimize
+# Database Anonimizer
 
 **Database Anonymizer** is a tool written in GO that allows **anonymizing or deleting data from a MySQL or PostgreSQL database**.
 

@@ -50,7 +50,6 @@ func NewFakeManager() FakeManager {
 			return "0"
 		}
 	}
-	datas["boolean_boolint"] = func() string { return strconv.Itoa(fake.Boolean().BoolInt()) }
 	datas["car_category"] = func() string { return fake.Car().Category() }
 	datas["car_fueltype"] = func() string { return fake.Car().FuelType() }
 	datas["car_maker"] = func() string { return fake.Car().Maker() }

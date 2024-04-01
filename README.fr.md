@@ -2,9 +2,9 @@
 
 **Database Anonimizer** est un outil écrit en GO et qui permet **d'anonymiser ou supprimer des données** d'une base de données **MySQL** ou **PostgreSQL**.
 
-Il répond à plusieurs cas d'usags comme le **permettre de transférer une copie de base de données anonymisée à des développeurs et des développeuses** ou répondre à la nécessité d'**anonymiser ou supprimer des données dans le cadre du RGPD** (Règlement général sur la protection des données) selon des durées de conservation définies dans un registre de traitement.
+Il répond à plusieurs cas d'usags comme le **permettre de transférer une copie de base de données anonymisée à des développeurs et des développeuses** ou répondre à la nécessité d'**anonymiser ou supprimer des données dans le cadre du RGPD** (Règlement général sur la protection des données) selon les durées de conservation définies dans le registre des traitements.
 
-Le projet inclue une grande quantité de générateurs de données aléatoires. Il permet également de générer des données via des modèles écrits en Twig. Vous pouvez spécifier des règles précises pour chaque tables ou bien des règles globales appliquées sur chacunes des tables de votre configration.
+Le projet inclue une grande quantité de générateurs de données aléatoires. Il permet également de générer des données via des modèles écrits en Twig. Vous pouvez spécifier des règles précises pour chaque tables ou bien des règles globales appliquées sur chacunes des tables de votre configuration.
 
 ## Usage
 

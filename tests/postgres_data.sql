@@ -23,3 +23,20 @@ INSERT INTO "table_truncate2" ("id", "delete_me") VALUES
 (1,	't'),
 (2,	't'),
 (3,	'f');
+
+DROP TABLE IF EXISTS "table_update";
+DROP SEQUENCE IF EXISTS table_update_id_seq;
+CREATE SEQUENCE table_update_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1;
+
+CREATE TABLE "public"."table_update" (
+    "id" integer DEFAULT nextval('table_update_id_seq') NOT NULL,
+    "col_string" character varying,
+    "col_bool" boolean,
+    "col_int" integer,
+    CONSTRAINT "table_update_pkey" PRIMARY KEY ("id")
+) WITH (oids = false);
+
+INSERT INTO "table_update" ("id", "col_string", "col_bool", "col_int") VALUES
+(1,	'foo', 't',	1),
+(2,	'bar', 'f', 2),
+(3,	NULL, NULL,	NULL);

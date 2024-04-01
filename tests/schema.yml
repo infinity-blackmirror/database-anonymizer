@@ -1,5 +1,10 @@
 rules:
   actions:
+    - table: table_update
+      columns:
+        col_string: address_city
+        col_bool: boolean_bool
+        col_int: '{{ "10" }}'
     - table: table_truncate1
       truncate: true
     - table: table_truncate2

@@ -2,7 +2,7 @@
 
 **Database Anonymizer** is a tool written in GO that allows **anonymizing or deleting data from a MySQL or PostgreSQL database**.
 
-It caters to various use cases such as **providing developers with an anonymized copy of a database** or **fulfilling the need to anonymize or delete data in compliance with GDPR (General Data Protection Regulation) requirements**, based on retention periods defined in the treatment register.
+It addresses various use cases such as **providing developers with an anonymized copy of a database** or **satisfying the need to anonymize or delete data in accordance with GDPR (General Data Protection Regulation) requirements. data protection)**, depending on the retention periods. defined in the processing register.
 
 The project includes a vast array of fakers. It also enables data generation via Twig-written templates. You can specify precise rules for each table or global rules applied to all tables in your configuration.
 

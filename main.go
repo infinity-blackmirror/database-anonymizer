@@ -15,6 +15,11 @@ import (
 
 func main() {
 	app := &cli.App{
+		Name:  "database-anonymizer",
+		Usage: "Allows anonymizing or deleting data from a MySQL or PostgreSQL database",
+		Authors: []*cli.Author{
+			&cli.Author{Name: "Simon Vieille", Email: "contact@deblan.fr"},
+		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "dsn",

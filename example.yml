@@ -14,8 +14,9 @@ rules:
     - table: company
       columns:
         name: company_name
-    - table: post
-      query: 'select * from post where company_id is not null'
+    - table: access_log
+      query: 'select * from access_log where date < (NOW() - INTERVAL 6 MONTH)'
       delete: true
-    - table: training
+    - table: user_ip
+      primary_key: [user_id, ip_id]
       delete: true

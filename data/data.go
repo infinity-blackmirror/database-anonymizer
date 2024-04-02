@@ -17,7 +17,7 @@ type Data struct {
 	IsPrimaryKey bool
 	IsUpdated    bool
 
-	IsInteger bool
+	IsNumber  bool
 	IsBoolean bool
 	IsString  bool
 	IsNull    bool
@@ -70,6 +70,14 @@ func (d *Data) Update(row map[string]Data, manager faker.FakeManager) {
 		return
 	}
 
+	if d.Faker == "null" {
+		d.Value = ""
+		d.IsUpdated = true
+		d.IsNull = true
+
+		return
+	}
+
 	if d.IsTwigExpression() {
 		env := twig.New(nil)
 		params := map[string]stick.Value{}
@@ -85,6 +93,7 @@ func (d *Data) Update(row map[string]Data, manager faker.FakeManager) {
 
 		d.Value = buf.String()
 		d.IsUpdated = true
+		d.IsNull = d.Value == ""
 
 		return
 	}

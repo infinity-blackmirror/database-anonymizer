@@ -65,7 +65,7 @@ func (a *App) TruncateTable(c config.SchemaConfigAction) error {
 		values := make(map[int]string)
 
 		for _, col := range c.PrimaryKey {
-			if !row[col].IsString {
+			if !row[col].IsString || row[col].IsNull {
 				value := row[col]
 				pkeys = append(pkeys, fmt.Sprintf("%s=%s", col, value.FinalValue()))
 			} else {
@@ -166,7 +166,7 @@ func (a *App) UpdateRows(c config.SchemaConfigAction, globalColumns map[string]s
 
 		for col, value := range row {
 			if value.IsUpdated && !value.IsVirtual {
-				if value.IsString {
+				if value.IsString && !value.IsNull {
 					updates = append(updates, database.GetNamedParameter(a.DbConfig.Type, col, len(values)+1))
 					values[len(values)+1] = value.FinalValue()
 				} else {
@@ -178,7 +178,7 @@ func (a *App) UpdateRows(c config.SchemaConfigAction, globalColumns map[string]s
 		for _, col := range c.PrimaryKey {
 			value := row[col]
 
-			if !value.IsString {
+			if !value.IsString || value.IsNull {
 				pkeys = append(pkeys, fmt.Sprintf("%s=%s", col, value.FinalValue()))
 			} else {
 				pkeys = append(pkeys, database.GetNamedParameter(a.DbConfig.Type, col, len(values)+1))

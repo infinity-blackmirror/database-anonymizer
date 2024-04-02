@@ -23,6 +23,23 @@ func GetNamedParameter(dbType, col string, number int) string {
 	return fmt.Sprintf("%s=$%d", col, number)
 }
 
+func IsPgNumberType(value string) bool {
+	switch value {
+	case
+		"smallint",
+		"integer",
+		"bigint",
+		"decimal",
+		"numeric",
+		"real",
+		"double precision":
+
+		return true
+	}
+
+	return false
+}
+
 func GetRows(db *sql.DB, query, table, dbType string) map[int]map[string]data.Data {
 	rows, err := db.Query(query)
 	defer rows.Close()
@@ -69,9 +86,9 @@ func GetRows(db *sql.DB, query, table, dbType string) map[int]map[string]data.Da
 
 					dataType := columnsTypes[col]
 
-					d.IsInteger = dataType == "integer"
+					d.IsNumber = IsPgNumberType(dataType)
 					d.IsBoolean = dataType == "boolean"
-					d.IsString = !d.IsBoolean && !d.IsInteger
+					d.IsString = !d.IsBoolean && !d.IsNumber
 				} else {
 					d.IsString = true
 				}

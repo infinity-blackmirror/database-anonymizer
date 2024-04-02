@@ -154,7 +154,7 @@ func NewFakeManager() FakeManager {
 }
 
 func (f *FakeManager) IsValidFaker(name string) bool {
-	if name == "" || name == "_" {
+	if name == "" || name == "_" || name == "null" {
 		return true
 	}
 
